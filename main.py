@@ -1,17 +1,24 @@
 from ursina import *
 from Objects.line import Line
+from View.viewer import draw_cube, setup_window, change_app_title
+
 
 def main(argv):
-
-    app = Ursina()
+    # TODO: check why title won't change
+    app = Ursina(title='TAU Muon Estimator')
+    setup_window(app, False, False, True, True)
+    change_app_title(app, "TAU Muon Estimator")
 
     # Define the 3D line
     path = (Vec3(0, 0, 0), Vec3(0, 1, 0))
+
     thicknesses = (0.1, 0.1)
-    line = Line(Vec3(0,1,0),Vec3(0.1,-1,0),10,color.green)
-    EditorCamera()
-    origin = Entity(model='cube', color=color.brown)
-    origin.scale *= .25
+    line = Line(Vec3(0, 1, 0), Vec3(0.1, -1, 0), 10, color.green)
+    testcube = draw_cube(Vec3(0, 0, 0), Vec3(4, 1, 0.0254), color.pink)
+
+    EditorCamera()  # TODO: build a better camera
+    # origin = Entity(model='cube', color=color.brown)
+    # origin.scale *= .25
 
     # Run the game loop
     app.run()

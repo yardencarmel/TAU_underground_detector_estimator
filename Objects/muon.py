@@ -1,5 +1,5 @@
 from ursina import color, destroy
-import line
+import Objects.line
 
 
 class Muon:

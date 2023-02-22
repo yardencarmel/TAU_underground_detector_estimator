@@ -11,6 +11,4 @@ class Scintillator:
     def scintillate(self, muon):
         pass
 
-    @property
-    def pos(self, start_pos=vec(0, 0, 0)):
-        self.pos = start_pos
+

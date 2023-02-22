@@ -1,5 +1,5 @@
 from ursina import Entity, Mesh
-import controller
+import Objects.controller as controller
 
 
 class Line:
