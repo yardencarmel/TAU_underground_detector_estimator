@@ -1,4 +1,4 @@
-from Objects.muon import Muon
+from Objects.Muon import Muon
 from Objects.scintillator import Scintillator
 
 

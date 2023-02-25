@@ -1,12 +1,15 @@
 import View.viewer as viewer
 import Objects.line
-import Objects.muon
-from Objects.muon import Muon
+import Objects.Muon
+from Objects.Muon import Muon
 import random as rnd
 from Objects.scintillator import Scintillator
 from ursina import Vec3
+from Model.rejection_sampling import RejectionSampling
 
 objects = []
+rejection_sampling = RejectionSampling()
+
 from Model.settings import SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z, VEC0_3D
 
 
@@ -14,9 +17,9 @@ def invoke_draw_line(start, end, thickness, color):
     return viewer.draw_line(start, end, thickness, color)
 
 
-def add_to_objects_list(object):
-    objects.append(object)
-    return object
+def add_to_objects_list(_object):
+    objects.append(_object)
+    return _object
 
 
 def create_n_random_muons(n):
@@ -31,8 +34,9 @@ def create_n_random_muons(n):
         print("Please define a scintillator fist!")
         return
     for i in range(1, n + 1):
-        end = rnd.randint(scintillator_ref.pos - scintillator_ref.size / 2,
-                          scintillator_ref.pos + scintillator_ref.size / 2)
+        end = rnd.randint(scintillator_ref.pos - scintillator_ref.scale / 2,
+                          scintillator_ref.pos + scintillator_ref.scale / 2)
+        # TODO: Enter angel from cos^2 and trace back the starting point.
         muon_i = Muon()  # TODO: randomize locations and momentas.
 
 

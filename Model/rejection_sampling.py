@@ -1,34 +1,37 @@
-from math import *
-from random import *
-# import sympy as sy
+import numpy as np
+import matplotlib.pyplot as plt
 
-
-def my_formula(*args, formula):
-    """
-    :return: Returns formula evaluated at args
-    :param args: Variable arguments to be evaluated by formula
-    :param formula: Formula to evaluated variables
-    """
-    return formula(*args)
+pi = np.pi
 
 
 class RejectionSampling:
     def __init__(self):
-        self.sample = 0
+        self.x_len = 1000
+        self.sample_size = 10000
+        self.xs = np.linspace(-0.5 * pi, 0.5 * pi, self.x_len)
+        self.ys = self.f(self.xs)
 
-    def generate_number(self, dist_func, support_boundary):
-        """
-        Generate a number using a specified distribution function. A number x is more likely to be generated if the
-        distribution function's value when x is applied is higher. I.e, P(0)>P(pi/2) for PDF of cos(x)^2
-        :param dist_func: The distribution function as a lambda function of 1 variable
-        :param support_boundary: The support boundaries of the distribution functon, mirrored around 0
-        :return: A random number from the PDF represented by dist_func
-        """
-        self.sample = uniform(-support_boundary, support_boundary)
-        sample_value = my_formula(self.sample, dist_func)
-        accept_value = uniform(0, 1)
-        while accept_value > sample_value:
-            self.sample = uniform(-support_boundary, support_boundary)
-            sample_value = cos(self.sample) ** 2
-            accept_value = uniform(0, 1)
-        return sample_value
+    def get_angles(self):
+        samples = self.batch_sample(self.f, self.sample_size, self.x_len)
+        return samples
+
+    def print_results(self, samples):
+        plt.plot(self.xs, self.ys, label="Function")
+        plt.hist(samples, density=True, alpha=0.2, label="Sample distribution")
+        plt.hist(samples, 1000, color='b', density=True, alpha=0.1, label="Sample distribution")
+        plt.xlim(min(self.xs), max(self.xs)), plt.ylim(0, 1.1), plt.xlabel("x"), plt.ylabel("f(x)"), plt.legend()
+        plt.show()
+
+    @staticmethod
+    def f(x):
+        return (2 / pi) * np.cos(x) ** 2
+
+    @staticmethod
+    def batch_sample(function, num_samples, batch, x_min=-0.5 * pi, x_max=0.5 * pi,
+                     y_max=2 / pi):
+        samples = []
+        while len(samples) < num_samples:
+            x = np.random.uniform(low=x_min, high=x_max, size=batch)
+            y = np.random.uniform(low=0, high=y_max, size=batch)
+            samples += x[y < function(x)].tolist()
+        return samples[:num_samples]
