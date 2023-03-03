@@ -40,9 +40,11 @@ def create_n_random_muons(n):
         end = [[rnd.uniform(scintillator_ref.pos.x-scintillator_ref.size.x,
                             scintillator_ref.pos.x+scintillator_ref.size.x) for i in np.ones((n,), dtype=int)],
                [rnd.uniform(scintillator_ref.pos.y-scintillator_ref.size.y,
-                            scintillator_ref.pos.y+scintillator_ref.size.y) for j in np.ones((n,), dtype=int)]]
+                            scintillator_ref.pos.y+scintillator_ref.size.y) for j in np.ones((n,), dtype=int)],
+               [round(scintillator_ref.pos.z + scintillator_ref.size.z/2,4) for k in np.ones((n,), dtype=int)]]
         angles = _rejection_sampling.get_angles(n)
-        start # TODO: Calculate start point by end point and distance
+        #alpha =
+        #start # TODO: Calculate start point by end point and distance
         # TODO: Enter angel from cos^2 and trace back the starting point.
         muon_i = Muon()  # TODO: randomize locations and momentas.
 

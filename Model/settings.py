@@ -18,7 +18,10 @@ VEC0_3D = Vec3(0, 0, 0)
 VEC0_4D = Vec4(0, 0, 0, 0)
 
 # Energy Scales #
-KeV = 10**3
-MeV = 10**6
-GeV = 10**9
+KeV = 10 ** 3
+MeV = 10 ** 6
+GeV = 10 ** 9
 
+# Deltas for physics #
+dt = 0.001  # sec
+dx = 0.01  # meter
