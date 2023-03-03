@@ -7,12 +7,12 @@ pi = np.pi
 class RejectionSampling:
     def __init__(self):
         self.x_len = 1000
-        self.sample_size = 10000
-        self.xs = np.linspace(-0.5 * pi, 0.5 * pi, self.x_len)
+        self.sample_size = 0
+        self.xs = np.linspace(-pi/3, pi/3, self.x_len)
         self.ys = self.f(self.xs)
 
-    def get_angles(self):
-        samples = self.batch_sample(self.f, self.sample_size, self.x_len)
+    def get_angles(self, sample_size):
+        samples = self.batch_sample(self.f, sample_size, self.x_len, min(self.xs), max(self.xs))
         return samples
 
     def print_results(self, samples):
