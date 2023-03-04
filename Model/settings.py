@@ -5,12 +5,17 @@
 # -HIS SCOPE. ALL UNITS ARE IN SI MKS #
 #######################################
 
-from ursina import Vec4, Vec3, Vec2
+from ursina import Vec4, Vec3, Vec2, color
 
-# Scintillator globals #
+# Scintillator Globals #
 SCINTILLATOR_SIZE_X = 0.5
 SCINTILLATOR_SIZE_Y = 0.5
 SCINTILLATOR_SIZE_Z = 0.0254  # 1 inch
+SCINTILLATOR_COLOR = color.pink
+
+# Muons Globals #
+CREATION_HEIGHT = 10  # meters above scintillator
+MUON_COLOR = color.green
 
 # 0 Vec #
 VEC0_2D = Vec2(0, 0)
