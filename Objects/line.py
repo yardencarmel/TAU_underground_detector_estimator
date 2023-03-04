@@ -1,6 +1,7 @@
-from ursina import Entity, Mesh
+from ursina import Entity, Mesh, Vec3
 import Objects.controller as controller
 from numpy import sqrt
+from numpy import arccos
 
 
 def size_of_vec(vec):
@@ -12,20 +13,18 @@ def size_of_vec(vec):
     return sqrt((vec.x ** 2 + vec.y ** 2 + vec.z ** 2))
 
 
-def direction_cos(alpha, beta, gamma, vec):
+def direction_angles(vec):
     """
-    Returns the directional cosine of 3 given angles: alpha, beta and gamma, compared to a given vector vec
-    :param alpha: x-axis directional angle
-    :param beta: y-axis directional angle
-    :param gamma: z-axis directional angle
+    Returns the directional cosine of 3 given of a given vector vec
     :param vec: 3D vector
     :return: cos_alpha, cos_beta, cos_gamma, the 3 directional cosines
     """
     vec_size = size_of_vec(vec)
-    cos_alpha = vec.x / vec_size
-    cos_beta = vec.y / vec_size
-    cos_gamma = vec.z / vec_size
-    return cos_alpha, cos_beta, cos_gamma
+    alpha = arccos(vec.x / vec_size)
+    beta = arccos(vec.y / vec_size)
+    gamma = arccos(vec.z / vec_size)
+
+    return Vec3(alpha, beta, gamma)
 
 
 class Line:
