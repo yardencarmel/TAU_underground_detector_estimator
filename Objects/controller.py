@@ -41,9 +41,9 @@ def create_n_random_muons(n):
     directions_vectors = []  # holds directions vectors from end to future start points:
     # (cos(α)*sin(θ)*cos(β) + sin(α)*sin(θ)*sin(β), sin(α)*sin(θ)*cos(β) - cos(α)*sin(θ)*sin(*β), cos θ)
 
-    unit_directions_vectors = []  # holds unit directions vectors from end to future start points
+    unit_directions_vector = None  # holds unit directions vectors from end to future start points
 
-    distances = []  # holds the distances between end points to start points
+    distances = None  # holds the distances between end points to start points
 
     start_points = []
 
@@ -53,19 +53,19 @@ def create_n_random_muons(n):
         return
 
     scintillator_ref = scintillator_ref[0]  # the world's scintillator reference
-    end_point = None
-    for i in range(1, n + 1):  # Create n end vectors for Muons
-        end_point = Vec3(rnd.uniform(scintillator_ref.pos.x - 0.5 * scintillator_ref.size.x,
-                                     scintillator_ref.pos.x + 0.5 * scintillator_ref.size.x),
-                         rnd.uniform(scintillator_ref.pos.y - 0.5 * scintillator_ref.size.y,
-                                     scintillator_ref.pos.y + 0.5 * scintillator_ref.size.y),
-                         round(scintillator_ref.pos.z + scintillator_ref.size.z / 2, 4))
+    end_point = []
+
+    for i in range(0, n):  # Create n end vectors for Muons
+        distance = rnd.uniform(0, 0.5*np.sqrt(2)*SCINTILLATOR_SIZE_X)
+        phi = rnd.uniform(0, 2*np.pi)
+        end_point.append(Vec3(distance*np.cos(phi), distance*np.sin(phi),
+                              round(scintillator_ref.pos.z + scintillator_ref.size.z / 2, 4)))
 
         # end_point_vector = Vec3(*end_point)
         incident_angle = _rejection_sampling.get_angles(1)[0]  # create randomized hit angles from cos^2 distribution
 
-        _direction_angles = line.direction_angles(end_point)
-        #direction_angles.append(_direction_angles)  # calculate the direction angles from each end point
+        _direction_angles = line.direction_angles(end_point[-1])
+        # direction_angles.append(_direction_angles)  # calculate the direction angles from each end point
         cos_direction_x = np.cos(_direction_angles.x)  # calculate cos(a) for each
         sin_direction_x = np.sin(_direction_angles.x)  # calculate sin(a) for each
         cos_direction_y = np.cos(_direction_angles.y)
@@ -80,15 +80,15 @@ def create_n_random_muons(n):
         x_val = direction_vector.x / size_of_vec
         y_val = direction_vector.y / size_of_vec
         z_val = direction_vector.z / size_of_vec
-        unit_directions_vectors.append(Vec3(x_val, y_val, z_val))
+        unit_directions_vector = Vec3(x_val, y_val, z_val)
 
-        start_x = end_point.x + distances * unit_directions_vectors[i].x
-        start_y = end_point.y + distances * unit_directions_vectors[i].y
-        start_z = end_point.z + distances * unit_directions_vectors[i].z
+        start_x = end_point[-1].x + distances * unit_directions_vector.x
+        start_y = end_point[-1].y + distances * unit_directions_vector.y
+        start_z = end_point[-1].z + distances * unit_directions_vector.z
         start_points.append(Vec3(start_x, start_y, start_z))
 
-        line_i = invoke_draw_line(start_points[i], end_point_vector, 1, MUON_COLOR)
-        muon_i = Muon(start_points[i], end_point_vector, 1 * GeV, line_i)
+        line_i = invoke_draw_line(start_points[-1], end_point[-1], 1, MUON_COLOR)
+        muon_i = Muon(start_points[-1], end_point[-1], 1 * GeV, line_i)
 
     # for i in range(1, n + 1):  # Create n end vectors for Muons
     #     end_points = [[rnd.uniform(scintillator_ref.pos.x - 0.5*scintillator_ref.size.x,

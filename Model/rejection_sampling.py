@@ -13,6 +13,7 @@ class RejectionSampling:
 
     def get_angles(self, sample_size):
         samples = self.batch_sample(self.f, sample_size, self.x_len, min(self.xs), max(self.xs))
+        self.print_results(samples)
         return samples
 
     def print_results(self, samples):
