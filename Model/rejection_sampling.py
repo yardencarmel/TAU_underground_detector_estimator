@@ -8,12 +8,12 @@ class RejectionSampling:
     def __init__(self):
         self.x_len = 1000
         self.sample_size = 0
-        self.xs = np.linspace(-pi/3, pi/3, self.x_len)
+        self.xs = np.linspace(-pi/3, 0, self.x_len)
         self.ys = self.f(self.xs)
 
     def get_angles(self, sample_size):
         samples = self.batch_sample(self.f, sample_size, self.x_len, min(self.xs), max(self.xs))
-        self.print_results(samples)
+        # self.print_results(samples)
         return samples
 
     def print_results(self, samples):
@@ -28,7 +28,7 @@ class RejectionSampling:
         return (2 / pi) * np.cos(x) ** 2
 
     @staticmethod
-    def batch_sample(function, num_samples, batch, x_min=-0.5 * pi, x_max=0.5 * pi,
+    def batch_sample(function, num_samples, batch, x_min=-pi/3, x_max=pi/3,
                      y_max=2 / pi):
         samples = []
         while len(samples) < num_samples:

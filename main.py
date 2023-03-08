@@ -16,12 +16,14 @@ def main(argv):
     # path = (Vec3(0, 0, 0), Vec3(0, 1, 0))
     #
     # thicknesses = (0.1, 0.1)
-    # line = Line(Vec3(0, 1, 0), Vec3(0.1, -1, 0), 10, color.green)
+    x = Line(Vec3(100, 0, 0), Vec3(-100, 0, 0), 0.5, color.red)
+    y = Line(Vec3(0, 100, 0), Vec3(0, -100, 0), 0.5, color.green)
+    z = Line(Vec3(0, 0, 100), Vec3(0, 0, -100), 0.5, color.blue)
     # testmuon = Muon(VEC0_3D, Vec3(0, -3, 0), 1 * GeV, line)
     # testmuon.kill_muon()
     # testcube = draw_cube(Vec3(0, 0, 0), Vec3(4, 1, 0.0254), color.pink)
     scint = cntrl.create_scintillator()
-    cntrl.create_n_random_muons(1000)
+    cntrl.create_n_random_muons(10000)
 
     EditorCamera()  # TODO: build a better camera
     # origin = Entity(model='cube', color=color.brown)
