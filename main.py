@@ -23,7 +23,8 @@ def main(argv):
     # testmuon.kill_muon()
     # testcube = draw_cube(Vec3(0, 0, 0), Vec3(4, 1, 0.0254), color.pink)
     scint = cntrl.create_scintillator()
-    cntrl.create_n_random_muons(10000)
+    #cntrl.create_n_random_muons(1000)
+    cntrl.create_ground(4,Vec3(1,1,1),Vec3(1,2,2))
 
     EditorCamera()  # TODO: build a better camera
     # origin = Entity(model='cube', color=color.brown)
