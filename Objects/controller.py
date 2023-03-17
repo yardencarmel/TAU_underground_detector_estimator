@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 import View.viewer as viewer
 import Objects.line as line
 import Objects.Muon
@@ -41,7 +43,7 @@ def create_n_random_muons(n):
     curr_start_point = None  # This holds current start point of the muon in the iteration
 
     end_points = []  # This holds randomized end points
-    curr_ent_point = None  # This holds current end point of the muon in the iteration
+    curr_end_point = None  # This holds current end point of the muon in the iteration
 
     # This holds the direction vectors between end point to start point: (sin(θ)*cos(φ), sin(θ)*sin(φ), cos(θ))
     direction_vectors = []
@@ -50,6 +52,7 @@ def create_n_random_muons(n):
     angles = []
     phi = None
     theta = None
+    theta = _rejection_sampling.get_angles(n)
 
     # Check there exists a scintillator in the scene TODO: change when there are several scintillators
     scintillator_ref = [x for x in objects if isinstance(x, (Scintillator,))]  # Tries to get the scintillator obj
@@ -61,42 +64,44 @@ def create_n_random_muons(n):
     # For loop to create n muons
     for i in range(0, n):  # Create n end vectors for Muons
         # Randomize hit (end) point on the scintillator
-        curr_ent_point = Vec3(rnd.uniform(scintillator_ref.pos.x - 0.5 * scintillator_ref.size.x,
+        curr_end_point = Vec3(rnd.uniform(scintillator_ref.pos.x - 0.5 * scintillator_ref.size.x,
                                           scintillator_ref.pos.x + 0.5 * scintillator_ref.size.x),
                               rnd.uniform(scintillator_ref.pos.y - 0.5 * scintillator_ref.size.y,
                                           scintillator_ref.pos.y + 0.5 * scintillator_ref.size.y),
                               round(scintillator_ref.pos.z + scintillator_ref.size.z / 2, 4))
         # Append the end point to a list for future use
-        end_points.append(curr_ent_point)
+        end_points.append(curr_end_point)
 
-        theta = _rejection_sampling.get_angles(1)[0]  # create randomized hit angles from cos^2 distribution
+        #theta = _rejection_sampling.get_angles(1)[0]  # create randomized hit angles from cos^2 distribution
+        curr_theta = theta[i]
         # Randomize rotational angle for the incident muon
         phi = rnd.uniform(0, 2 * np.pi)
-        angles.append((phi, theta))
+        angles.append((phi, curr_theta))
 
         # Calculate the direction vector from end point to start point
-        dx = np.sin(theta) * np.cos(phi)
-        dy = np.sin(theta) * np.sin(phi)
-        dz = np.cos(theta)
+        dx = np.sin(curr_theta) * np.cos(phi)
+        dy = np.sin(curr_theta) * np.sin(phi)
+        dz = np.cos(curr_theta)
         curr_direction_vector = Vec3(dx, dy, dz)
         # Append the vector to the list of direction vectors
         direction_vectors.append(curr_direction_vector)
 
         # Declare the distance (length) of the total line path by CREATION_HEIGHT setting
-        distance = CREATION_HEIGHT / np.cos(theta)
+        distance = CREATION_HEIGHT / np.cos(curr_theta)
 
         # Calculate the start point by using linear line formula
-        px = curr_ent_point.x + distance * curr_direction_vector.x
-        py = curr_ent_point.y + distance * curr_direction_vector.y
-        pz = curr_ent_point.z + distance * curr_direction_vector.z
+        px = curr_end_point.x + distance * curr_direction_vector.x
+        py = curr_end_point.y + distance * curr_direction_vector.y
+        pz = curr_end_point.z + distance * curr_direction_vector.z
         # Create a vector to the start point
         curr_start_point = Vec3(px, py, pz)
         # Append the start point's vector to a list of all start points
         start_points.append(curr_start_point)
 
         # Create a line based on the start point and end point, and create a muon obj based on that.
-        line_i = invoke_draw_line(curr_start_point, curr_ent_point, 0.1, MUON_COLOR)
-        muon_i = Muon(curr_start_point, curr_ent_point, 1 * GeV, line_i)
+        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
+        #line_i = None # Do not draw muons
+        muon_i = Muon(curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
     return muons
@@ -147,7 +152,8 @@ def create_ground(map_size, vacancy_pos, vacancy_size):  # TODO: understand the 
         for y in range(Y):
             for z in range(Z):
                 if ground_map[x][y][z]:
-                    creat_ground_tile(Vec3(x + delta_x , y + delta_y, z+CAVE_CEILING))
+                    curr_ground = creat_ground_tile(Vec3(x + delta_x, y + delta_y, z + CAVE_CEILING))
+                    add_to_objects_list(curr_ground)
 
 
 def creat_ground_tile(pos, size=Vec3(1 * m, 1 * m, 1 * m)):
@@ -155,3 +161,38 @@ def creat_ground_tile(pos, size=Vec3(1 * m, 1 * m, 1 * m)):
     wireframe = invoke_draw_cube(pos, size * 1.01, 0, color=WIRE_COLOR)
     ground = Ground(pos, size, VEC0_3D, cube, wireframe)
     return ground
+
+
+def create_hits_hist(scint, hit_points, bins):
+    # for hit_point in hit_points:
+    x = np.array([hit_point.x for hit_point in hit_points])
+    y = np.array([hit_point.y for hit_point in hit_points])
+    plt.hist2d(x, y, bins=bins)
+    plt.title("Hits Histogram, bins=" + str(bins))
+    plt.colorbar()
+    plt.show()
+    # plt.figure()
+    # for hit_point in hit_points:
+    #     plt.hist2d(hit_point.x, hit_point.y)
+    # plt.title("Hits Histogram 2")
+    # plt.show()
+
+    # pass
+
+
+def create_start_hist(start_points,bins):
+    x = [start_point_x.x for start_point_x in start_points]
+    y = [start_point_y.y for start_point_y in start_points]
+    plt.hist2d(x, y, bins=bins)
+    plt.title("Starts Histogram, bins=" + str(bins))
+    plt.colorbar()
+    plt.show()
+
+
+def test_rej(n):
+    plt.figure()
+    theta = []
+    for i in range(n):
+        theta.append(_rejection_sampling.get_angles(1)[0])
+    plt.hist(theta, bins=100, alpha=0.1)
+    plt.show()

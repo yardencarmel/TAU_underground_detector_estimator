@@ -17,9 +17,10 @@ class RejectionSampling:
         return samples
 
     def print_results(self, samples):
+        plt.figure()
         plt.plot(self.xs, self.ys, label="Function")
         plt.hist(samples, density=True, alpha=0.2, label="Sample distribution")
-        plt.hist(samples, 100, color='b', density=True, alpha=0.1, label="Sample distribution")
+        plt.hist(samples, 100, color='b', density=True, alpha=0.1, label="Sample distribution, 100 bins")
         plt.xlim(min(self.xs), max(self.xs)), plt.ylim(0, 1.1), plt.xlabel("x"), plt.ylabel("f(x)"), plt.legend()
         plt.show()
 
@@ -40,5 +41,5 @@ class RejectionSampling:
 
 if __name__ == "__main__":
     rej = RejectionSampling()
-    results = rej.get_angles(10000)
+    results = rej.get_angles(100000)
     rej.print_results(results)
