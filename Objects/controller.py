@@ -9,7 +9,7 @@ from ursina import Vec3, Vec2, color
 from Model.rejection_sampling import RejectionSampling
 import numpy as np
 from Model.settings import SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z, VEC0_3D, CREATION_HEIGHT, \
-    GeV, MUON_COLOR, SCINTILLATOR_COLOR, GROUND_COLOR, WIRE_COLOR, m
+    GeV, MUON_COLOR, SCINTILLATOR_COLOR, GROUND_COLOR, WIRE_COLOR, m, CAVE_CEILING
 
 objects = []
 _rejection_sampling = RejectionSampling()
@@ -134,20 +134,20 @@ def create_scintillator():
 #     return end_vectors
 
 
-def create_ground(map_size, vacancy_pos, vacancy_size): #TODO: understand the issue here
+def create_ground(map_size, vacancy_pos, vacancy_size):  # TODO: understand the issue here
     ground_map = np.ones((map_size * m, map_size * m, map_size * m), dtype=float)
     ground_map[int(vacancy_pos.y):int(vacancy_pos.y + vacancy_size.y),
-               int(vacancy_pos.x):int(vacancy_pos.x + vacancy_size.x),
-               int(vacancy_pos.z):int(vacancy_pos.z + vacancy_size.z)] = np.zeros((int(vacancy_size.y), int(vacancy_size.x),
-                                                                         int(vacancy_size.z)), dtype=int)
+    int(vacancy_pos.x):int(vacancy_pos.x + vacancy_size.x),
+    int(vacancy_pos.z):int(vacancy_pos.z + vacancy_size.z)] = np.zeros((int(vacancy_size.y), int(vacancy_size.x),
+                                                                        int(vacancy_size.z)), dtype=int)
     X, Y, Z = ground_map.shape
-    delta_x = -X/2
-    delta_y= -Y/2
+    delta_x = -X / 2 + 0.5
+    delta_y = -Y / 2 + 0.5
     for x in range(X):
         for y in range(Y):
             for z in range(Z):
                 if ground_map[x][y][z]:
-                    creat_ground_tile(Vec3(x+delta_x*0.5, y+delta_y*0.5, 5))
+                    creat_ground_tile(Vec3(x + delta_x , y + delta_y, z+CAVE_CEILING))
 
 
 def creat_ground_tile(pos, size=Vec3(1 * m, 1 * m, 1 * m)):
