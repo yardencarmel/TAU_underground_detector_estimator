@@ -1,4 +1,5 @@
 from ursina import destroy, raycast
+import Objects.controller as cntrl
 
 import Objects.Ground
 from Model.VectorCalculations import calculate_direction_between_points, size_of_vec
@@ -22,8 +23,8 @@ class Muon:
         # self.momentum = momentum
         self.energy = energy
         self.mesh_ref = mesh
-        self.hit_info = raycast(self.start, calculate_direction_between_points(self.start, self.end), ignore=(self,),
-                                distance=size_of_vec(self.start - self.end), debug=False)
+
+        self.hit_info = None
 
     def kill_muon(self):
         """
@@ -34,8 +35,14 @@ class Muon:
         del self
         return None
 
-    def calculate_muon_collisions(self):  # TODO: print only hit ground
+    def calculate_collisions(self):  # TODO: print only hit ground
+        self.hit_info = raycast(self.start, self.end - self.start,
+                                distance=size_of_vec(self.start - self.end), ignore=tuple(cntrl.wireframes), debug=False)
         entities = self.hit_info.entities
         for entity in entities:
-            if isinstance(entity, Objects.Ground.Ground):
+            print(type(entity))
+            if entity in cntrl.ground_tiles:
                 print(str(entity) + " is hit at point: " + self.hit_info.point)
+        return entities
+
+

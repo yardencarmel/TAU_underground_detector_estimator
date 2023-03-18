@@ -10,10 +10,11 @@ from Objects.scintillator import Scintillator
 from ursina import Vec3, Vec2, color
 from Model.rejection_sampling import RejectionSampling
 import numpy as np
-from Model.settings import SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z, VEC0_3D, CREATION_HEIGHT, \
-    GeV, MUON_COLOR, SCINTILLATOR_COLOR, GROUND_COLOR, WIRE_COLOR, m, CAVE_CEILING
+from Model.settings import *
 
 objects = []
+wireframes = []
+ground_tiles = []
 _rejection_sampling = RejectionSampling()
 
 
@@ -72,7 +73,7 @@ def create_n_random_muons(n):
         # Append the end point to a list for future use
         end_points.append(curr_end_point)
 
-        #theta = _rejection_sampling.get_angles(1)[0]  # create randomized hit angles from cos^2 distribution
+        # theta = _rejection_sampling.get_angles(1)[0]  # create randomized hit angles from cos^2 distribution
         curr_theta = theta[i]
         # Randomize rotational angle for the incident muon
         phi = rnd.uniform(0, 2 * np.pi)
@@ -99,8 +100,10 @@ def create_n_random_muons(n):
         start_points.append(curr_start_point)
 
         # Create a line based on the start point and end point, and create a muon obj based on that.
+        # line_i = None  # Do not draw muons
+        # if i % 1 == 0:
+        #     line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
         line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        #line_i = None # Do not draw muons
         muon_i = Muon(curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
@@ -139,12 +142,14 @@ def create_scintillator():
 #     return end_vectors
 
 
-def create_ground(map_size, vacancy_pos, vacancy_size):  # TODO: understand the issue here
-    ground_map = np.ones((map_size * m, map_size * m, map_size * m), dtype=float)
-    ground_map[int(vacancy_pos.y):int(vacancy_pos.y + vacancy_size.y),
-    int(vacancy_pos.x):int(vacancy_pos.x + vacancy_size.x),
-    int(vacancy_pos.z):int(vacancy_pos.z + vacancy_size.z)] = np.zeros((int(vacancy_size.y), int(vacancy_size.x),
-                                                                        int(vacancy_size.z)), dtype=int)
+def create_ground(map_size, vacancy_pos, vacancy_size):
+    ground_map = np.ones((int(map_size.x), int(map_size.y), int(map_size.z)), dtype=int)
+
+    ground_map[int(vacancy_pos.x):int(vacancy_pos.y + vacancy_size.x),
+    int(vacancy_pos.y):int(vacancy_pos.x + vacancy_size.y),
+    int(vacancy_pos.z):int(vacancy_pos.z + vacancy_size.z)] = \
+        np.zeros((int(vacancy_size.y), int(vacancy_size.x), int(vacancy_size.z)), dtype=int)
+
     X, Y, Z = ground_map.shape
     delta_x = -X / 2 + 0.5
     delta_y = -Y / 2 + 0.5
@@ -152,18 +157,29 @@ def create_ground(map_size, vacancy_pos, vacancy_size):  # TODO: understand the 
         for y in range(Y):
             for z in range(Z):
                 if ground_map[x][y][z]:
-                    curr_ground = creat_ground_tile(Vec3(x + delta_x, y + delta_y, z + CAVE_CEILING))
+                    curr_ground = creat_ground_tile(Vec3(x + delta_x, y + delta_y, GROUND_SLATE_Z * z + CAVE_CEILING))
                     add_to_objects_list(curr_ground)
 
 
-def creat_ground_tile(pos, size=Vec3(1 * m, 1 * m, 1 * m)):
+# TODO: understand how to create ground tile that inherits from cube
+def creat_ground_tile(pos, size=Vec3(GROUND_SLATE_X, GROUND_SLATE_Y, GROUND_SLATE_Z)):
     cube = invoke_draw_cube(pos, size, 1, GROUND_COLOR)
+    cube.collider = 'box'
     wireframe = invoke_draw_cube(pos, size * 1.01, 0, color=WIRE_COLOR)
-    ground = Ground(pos, size, VEC0_3D, cube, wireframe)
+    wireframes.append(wireframe)
+    ground = Ground(pos, size, VEC0_3D, cube, wireframe, cube.collider)
+    ground_tiles.append(ground)
     return ground
 
 
-def create_hits_hist(scint, hit_points, bins):
+def check_muons_collisions(muons):
+    hit_entities = []
+    for muon in muons:
+        hit_entities.append(muon.calculate_collisions())
+    return hit_entities
+
+
+def create_hits_hist(hit_points, bins):
     # for hit_point in hit_points:
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
@@ -171,19 +187,12 @@ def create_hits_hist(scint, hit_points, bins):
     plt.title("Hits Histogram, bins=" + str(bins))
     plt.colorbar()
     plt.show()
-    # plt.figure()
-    # for hit_point in hit_points:
-    #     plt.hist2d(hit_point.x, hit_point.y)
-    # plt.title("Hits Histogram 2")
-    # plt.show()
-
-    # pass
 
 
-def create_start_hist(start_points,bins):
+def create_start_hist(start_points, bins):
     x = [start_point_x.x for start_point_x in start_points]
     y = [start_point_y.y for start_point_y in start_points]
-    plt.hist2d(x, y, bins=bins)
+    plt.hist2d(x, y, bins=bins, range=[[-10, 10], [-10, 10]])
     plt.title("Starts Histogram, bins=" + str(bins))
     plt.colorbar()
     plt.show()

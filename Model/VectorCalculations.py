@@ -1,4 +1,6 @@
 import numpy as np
+
+
 def size_of_vec(vec):
     """
     Returns the size of a given vector
@@ -7,6 +9,7 @@ def size_of_vec(vec):
     """
     return np.sqrt((vec.x ** 2 + vec.y ** 2 + vec.z ** 2))
 
-def calculate_direction_between_points(p1,p2):
-    direction = (p1-p2)/size_of_vec(p1-p2)
+
+def calculate_direction_between_points(p1, p2):
+    direction = (p2 - p1) / size_of_vec(p2 - p1)
     return direction

@@ -22,9 +22,12 @@ SCINTILLATOR_COLOR = color.pink
 # Ground Globals #
 GROUND_COLOR = color.brown
 CAVE_CEILING = 1.5 * m
+GROUND_SLATE_X = 1 * m
+GROUND_SLATE_Y = 1 * m
+GROUND_SLATE_Z = 1 * m
 
 # Muons Globals #
-CREATION_HEIGHT = 30 * m  # meters above scintillator
+CREATION_HEIGHT = 1000 * m  # meters above scintillator
 MUON_COLOR = color.green
 
 # 0 Vec #
