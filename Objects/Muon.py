@@ -1,5 +1,6 @@
 from ursina import destroy, raycast
 import Objects.controller as cntrl
+from Objects.Ground import Ground
 
 import Objects.Ground
 from Model.VectorCalculations import calculate_direction_between_points, size_of_vec
@@ -37,12 +38,13 @@ class Muon:
 
     def calculate_collisions(self):  # TODO: print only hit ground
         self.hit_info = raycast(self.start, self.end - self.start,
-                                distance=size_of_vec(self.start - self.end), ignore=tuple(cntrl.wireframes), debug=False)
+                                distance=size_of_vec(self.start - self.end), ignore=tuple(cntrl.wireframes), debug=True)
         entities = self.hit_info.entities
         for entity in entities:
             print(type(entity))
-            if entity in cntrl.ground_tiles:
-                print(str(entity) + " is hit at point: " + self.hit_info.point)
+            print(entity.name)
+            if isinstance(entity, Ground):
+                print("*************************")
+                print(str(entity) + " is hit at point: " + str(self.hit_info.point))
+                print("*************************")
         return entities
-
-

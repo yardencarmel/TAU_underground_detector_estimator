@@ -23,7 +23,8 @@ def invoke_draw_line(start, end, thickness, color):
 
 
 def invoke_draw_cube(pos, size, mode, color):
-    if mode: return viewer.draw_cube(pos, size, color)
+    if mode:
+        return viewer.draw_cube(pos, size, color)
     return viewer.draw_wireframe_cube(pos, size, color)
 
 
@@ -110,7 +111,7 @@ def create_n_random_muons(n):
     return muons
 
 
-def create_scintillator():
+def create_scintillator(num_of_scints):
     """
     This function will create the main scintillator 
     :return: Returns the scintillator object
@@ -120,12 +121,21 @@ def create_scintillator():
         print("A scintillator is already defined!")
         return
     scint_size = Vec3(SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z)  # set in settings
-    scint_pos = VEC0_3D  # in meters
-    # scint_origin = VEC0_3D
     scint_rot = VEC0_3D  # in degrees
-    cube = invoke_draw_cube(scint_pos, scint_size, 1, SCINTILLATOR_COLOR)
-    wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, 0, color=WIRE_COLOR)
-    scint = Scintillator(scint_pos, scint_size, scint_rot, cube, wireframe)
+    for i in range(num_of_scints):
+        scint_pos = Vec3(0, 0, -num_of_scints/2+0.5)*0.1 + Vec3(0, 0, 1)*0.1*i  # in meters
+        cube = invoke_draw_cube(scint_pos, scint_size, 1, SCINTILLATOR_COLOR)
+        cube.collider = None
+        wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, 0, color=WIRE_COLOR)
+        wireframe.collider = None
+        scint = Scintillator(i, scint_pos, scint_size, scint_rot, cube, wireframe)
+        scint.collider = 'box'
+    # scint_origin = VEC0_3D
+
+
+
+
+
 
     objects.insert(-1, scint)  # TODO: understand if scintillator's size is from middle point or some edge point
     return scint
