@@ -1,15 +1,12 @@
+import random as rnd
 import matplotlib.pyplot as plt
+import numpy as np
 
 import View.viewer as viewer
-import Objects.line as line
-import Objects.Muon
 from Objects.Muon import Muon
 from Objects.Ground import Ground
-import random as rnd
 from Objects.scintillator import Scintillator
-from ursina import Vec3, Vec2, color
 from Model.rejection_sampling import RejectionSampling
-import numpy as np
 from Model.settings import *
 
 objects = []
@@ -22,9 +19,7 @@ def invoke_draw_line(start, end, thickness, color):
     return viewer.draw_line(start, end, thickness, color)
 
 
-def invoke_draw_cube(pos, size, mode, color):
-    if mode:
-        return viewer.draw_cube(pos, size, color)
+def invoke_draw_cube(pos, size, color):
     return viewer.draw_wireframe_cube(pos, size, color)
 
 
@@ -70,7 +65,7 @@ def create_n_random_muons(n):
                                           scintillator_ref.pos.x + 0.5 * scintillator_ref.size.x),
                               rnd.uniform(scintillator_ref.pos.y - 0.5 * scintillator_ref.size.y,
                                           scintillator_ref.pos.y + 0.5 * scintillator_ref.size.y),
-                              round(scintillator_ref.pos.z + scintillator_ref.size.z / 2, 4))
+                              round(scintillator_ref.pos.z-NUMBER_OF_SCINTS*SCINTILLATOR_SPACING + scintillator_ref.size.z / 2, 4))
         # Append the end point to a list for future use
         end_points.append(curr_end_point)
 
@@ -104,8 +99,8 @@ def create_n_random_muons(n):
         # line_i = None  # Do not draw muons
         # if i % 1 == 0:
         #     line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        muon_i = Muon(curr_start_point, curr_end_point, 1 * GeV, line_i)
+        line_i = None #invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
+        muon_i = Muon(i, curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
     return muons
@@ -116,6 +111,7 @@ def create_scintillator(num_of_scints):
     This function will create the main scintillator 
     :return: Returns the scintillator object
     """""
+    NUMBER_OF_SCINTS = num_of_scints
     scintillator_ref = [x for x in objects if isinstance(Scintillator, x)]
     if len(scintillator_ref) > 0:
         print("A scintillator is already defined!")
@@ -124,19 +120,11 @@ def create_scintillator(num_of_scints):
     scint_rot = VEC0_3D  # in degrees
     for i in range(num_of_scints):
         scint_pos = Vec3(0, 0, -num_of_scints/2+0.5)*0.1 + Vec3(0, 0, 1)*0.1*i  # in meters
-        cube = invoke_draw_cube(scint_pos, scint_size, 1, SCINTILLATOR_COLOR)
-        cube.collider = None
-        wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, 0, color=WIRE_COLOR)
+        wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, color=WIRE_COLOR)
+        scint = Scintillator(i, scint_pos, scint_size, scint_rot, wireframe)
         wireframe.collider = None
-        scint = Scintillator(i, scint_pos, scint_size, scint_rot, cube, wireframe)
-        scint.collider = 'box'
+        wireframe.parent = scint
     # scint_origin = VEC0_3D
-
-
-
-
-
-
     objects.insert(-1, scint)  # TODO: understand if scintillator's size is from middle point or some edge point
     return scint
 

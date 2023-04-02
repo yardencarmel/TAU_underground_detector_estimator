@@ -2,17 +2,17 @@ from ursina import Entity, Mesh, window
 
 
 def draw_line(start, end, thickness, line_color):
-    line = Entity(model=Mesh(vertices=[start, end], mode='line', thickness=thickness), color=line_color)
+    line = Entity(model=Mesh(vertices=[start, end], mode='line', thickness=thickness), color=line_color, collision = False)
     return line
 
 
-def draw_cube(pos, size, color):
-    cube = Entity(model='cube', world_position=pos, scale=size, color=color, collider='box', mode='line')
-    return cube
+# def draw_cube(pos, size, color):
+#     cube = Entity(model='cube', world_position=pos, scale=size, color=color, mode='line')
+#     return cube
 
 
 def draw_wireframe_cube(pos, size, color):
-    cube = Entity(model='wireframe_cube', world_position=pos, scale=size, color=color, collider='box', mode='line')
+    cube = Entity(model='wireframe_cube', world_position=pos, scale=size, color=color, mode='line')
     return cube
 
 
