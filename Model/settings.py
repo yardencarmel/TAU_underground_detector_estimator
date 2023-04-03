@@ -31,6 +31,7 @@ GROUND_SLATE_Z = 1 * m
 # Muons Globals #
 CREATION_HEIGHT = 1000 * m  # meters above scintillator
 MUON_COLOR = color.green
+NUMBER_OF_MUONS = 5000
 
 # 0 Vec #
 VEC0_2D = Vec2(0, 0)

@@ -3,6 +3,7 @@ from ursina import Vec3, Entity, color
 
 class Scintillator(Entity):
     def __init__(self, level, pos, size, rotation, mesh_wire):
+        self.level = level
         self.pos = pos
         self.size = size
         self.rotation = rotation

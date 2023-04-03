@@ -1,4 +1,4 @@
-from ursina import destroy, raycast, color, Vec3, Entity, Mesh, lerp
+from ursina import destroy, raycast, color, Vec3, Entity, Mesh, inverselerp, lerp
 import Objects.controller as cntrl
 from Objects.scintillator import Scintillator
 from Model.settings import *
@@ -19,7 +19,7 @@ class Muon(Entity):
         :param energy: Energy, used for calculating scintillation.
         :param mesh: Mesh reference.
         """
-        self.start = lerp(start, Vec3(0), .1)
+        self.start = start
         self.end = end
         # self.momentum = momentum
         self.energy = energy
@@ -34,31 +34,34 @@ class Muon(Entity):
         :return: None
         """
         destroy(self.mesh_ref)
+        self.model = None
         del self
         return None
 
     def calculate_collisions(self):  # TODO: print only hit ground
-        self.hit_info = raycast(self.start/10, self.end - self.start,
-                                distance=size_of_vec(self.start - self.end), debug=True)
+        start_beam = lerp(self.start, self.end, .6)
+        self.hit_info = raycast(start_beam, self.end - start_beam,
+                                distance=size_of_vec(start_beam - self.end), debug=False)
+        # print("RAYCAST LEN: "+str(self.hit_info.distance))
         entities = self.hit_info.entities
         x = len(entities)
-        if x == 0:
-            self.color = color.cyan
-        if x == 1:
-            self.color = color.brown
-        if x == 2:
-            self.color = color.red
-        if x == 3:
-            self.color = color.orange
         if x == 4:
-            self.color = color.gold
-        if x == 5:
-            self.color = color.black
+            self.color = color.cyan
+            cntrl.passed_muons.append(self)
+        else:
+            self.kill_muon()
         for entity in entities:
-            print(type(entity))
-            print(entity.name)
             if isinstance(entity, Scintillator):
-                self.print_collision(entity, self.hit_info.point)
+                if entity.level == 0:
+                    cntrl.hits_on_scint_0.append(self.hit_info.point.xy)
+                if entity.level == 1:
+                    cntrl.hits_on_scint_1.append(self.hit_info.point.xy)
+                if entity.level == 2:
+                    cntrl.hits_on_scint_2.append(self.hit_info.point.xy)
+                if entity.level == 3:
+                    cntrl.hits_on_scint_3.append(self.hit_info.point.xy)
+                if entity.level == 4:
+                    cntrl.hits_on_scint_4.append(self.hit_info.point.xy)
         return entities
 
     def print_collision(self, entity, position):

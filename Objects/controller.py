@@ -13,6 +13,12 @@ objects = []
 wireframes = []
 ground_tiles = []
 _rejection_sampling = RejectionSampling()
+passed_muons = []
+hits_on_scint_0 = []
+hits_on_scint_1 = []
+hits_on_scint_2 = []
+hits_on_scint_3 = []
+hits_on_scint_4 = []
 
 
 def invoke_draw_line(start, end, thickness, color):
@@ -173,16 +179,32 @@ def creat_ground_tile(pos, size=Vec3(GROUND_SLATE_X, GROUND_SLATE_Y, GROUND_SLAT
 def check_muons_collisions(muons):
     hit_entities = []
     for muon in muons:
+        if muon.index % 100 == 0:
+            print("Checked collision on " + str(muon.index) + " muons.")
         hit_entities.append(muon.calculate_collisions())
+    for i in range(NUMBER_OF_SCINTS):
+        if i == 0:
+            create_hits_hist(hits_on_scint_0,25,i)
+        if i == 1:
+            create_hits_hist(hits_on_scint_1,25,i)
+        if i == 2:
+            create_hits_hist(hits_on_scint_2,25,i)
+        if i == 3:
+            create_hits_hist(hits_on_scint_3,25,i)
+        if i == 4:
+            create_hits_hist(hits_on_scint_4,25,i)
+
+    num_muons_passed = len(passed_muons)
+    print("Passed muons: " +str(num_muons_passed) + " = "+str(100*num_muons_passed/NUMBER_OF_MUONS) + "%")
     return hit_entities
 
 
-def create_hits_hist(hit_points, bins):
+def create_hits_hist(hit_points, bins, index):
     # for hit_point in hit_points:
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
     plt.hist2d(x, y, bins=bins)
-    plt.title("Hits Histogram, bins=" + str(bins))
+    plt.title("Hits Histogram for Scint Index "+str(index)+", bins=" + str(bins))
     plt.colorbar()
     plt.show()
 
