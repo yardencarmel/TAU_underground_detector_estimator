@@ -1,4 +1,7 @@
 import random as rnd
+import multiprocessing as mp
+from numba import jit, cuda
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -71,7 +74,9 @@ def create_n_random_muons(n):
                                           scintillator_ref.pos.x + 0.5 * scintillator_ref.size.x),
                               rnd.uniform(scintillator_ref.pos.y - 0.5 * scintillator_ref.size.y,
                                           scintillator_ref.pos.y + 0.5 * scintillator_ref.size.y),
-                              round(scintillator_ref.pos.z-NUMBER_OF_SCINTS*SCINTILLATOR_SPACING + scintillator_ref.size.z / 2, 4))
+                              round(
+                                  scintillator_ref.pos.z - NUMBER_OF_SCINTS * SCINTILLATOR_SPACING + scintillator_ref.size.z / 2,
+                                  4))
         # Append the end point to a list for future use
         end_points.append(curr_end_point)
 
@@ -105,7 +110,7 @@ def create_n_random_muons(n):
         # line_i = None  # Do not draw muons
         # if i % 1 == 0:
         #     line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        line_i = None #invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
+        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR) #None  #
         muon_i = Muon(i, curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
@@ -125,7 +130,7 @@ def create_scintillator(num_of_scints):
     scint_size = Vec3(SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z)  # set in settings
     scint_rot = VEC0_3D  # in degrees
     for i in range(num_of_scints):
-        scint_pos = Vec3(0, 0, -num_of_scints/2+0.5)*0.1 + Vec3(0, 0, 1)*0.1*i  # in meters
+        scint_pos = Vec3(0, 0, -num_of_scints / 2 + 0.5) * 0.1 + Vec3(0, 0, 1) * 0.1 * i  # in meters
         wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, color=WIRE_COLOR)
         scint = Scintillator(i, scint_pos, scint_size, scint_rot, wireframe)
         wireframe.collider = None
@@ -176,26 +181,39 @@ def creat_ground_tile(pos, size=Vec3(GROUND_SLATE_X, GROUND_SLATE_Y, GROUND_SLAT
     return ground
 
 
+def worker(muon):
+    return muon.calculate_collisions()
+
+
 def check_muons_collisions(muons):
+    # processes = 4
+    scint0, scint1, scint2, scint3, scint4 = None #  TODO: FINISH IT
+    # p = processes(Muon.calculate_collisions())
+    # pool = mp.Pool(mp.cpu_count() - 1)
+    # pool.map(worker, muons)
+    # pool.close()
+    # pool.join()
     hit_entities = []
+
     for muon in muons:
-        if muon.index % 100 == 0:
-            print("Checked collision on " + str(muon.index) + " muons.")
-        hit_entities.append(muon.calculate_collisions())
+        # if muon.index % 100 == 0:
+        #     print("Checked collision on " + str(muon.index) + " muons.")
+        scint0, scint1, scint2, scint3, scint4 = muon.calculate_collisions()
+        hits_on_scint_0 += scint0
     for i in range(NUMBER_OF_SCINTS):
         if i == 0:
-            create_hits_hist(hits_on_scint_0,25,i)
+            create_hits_hist(hits_on_scint_0, 25, i)
         if i == 1:
-            create_hits_hist(hits_on_scint_1,25,i)
+            create_hits_hist(hits_on_scint_1, 25, i)
         if i == 2:
-            create_hits_hist(hits_on_scint_2,25,i)
+            create_hits_hist(hits_on_scint_2, 25, i)
         if i == 3:
-            create_hits_hist(hits_on_scint_3,25,i)
+            create_hits_hist(hits_on_scint_3, 25, i)
         if i == 4:
-            create_hits_hist(hits_on_scint_4,25,i)
+            create_hits_hist(hits_on_scint_4, 25, i)
 
     num_muons_passed = len(passed_muons)
-    print("Passed muons: " +str(num_muons_passed) + " = "+str(100*num_muons_passed/NUMBER_OF_MUONS) + "%")
+    print("Passed muons: " + str(num_muons_passed) + " = " + str(100 * num_muons_passed / NUMBER_OF_MUONS) + "%")
     return hit_entities
 
 
@@ -204,7 +222,7 @@ def create_hits_hist(hit_points, bins, index):
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
     plt.hist2d(x, y, bins=bins)
-    plt.title("Hits Histogram for Scint Index "+str(index)+", bins=" + str(bins))
+    plt.title("Hits Histogram for Scint Index " + str(index) + ", bins=" + str(bins))
     plt.colorbar()
     plt.show()
 
