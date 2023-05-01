@@ -9,9 +9,9 @@ from ursina import Vec4, Vec3, Vec2, color
 
 # Spatial Scales #
 m = 1
-km = 10**3
-cm = 10**-1
-mm = 10**-2
+km = 10 ** 3
+cm = 10 ** -1
+mm = 10 ** -2
 
 # Scintillator Globals #
 SCINTILLATOR_SIZE_X = 0.5
@@ -19,7 +19,7 @@ SCINTILLATOR_SIZE_Y = 0.5
 SCINTILLATOR_SIZE_Z = 0.0254  # 1 inch
 SCINTILLATOR_COLOR = color.pink
 SCINTILLATOR_SPACING = 0.1 * m
-NUMBER_OF_SCINTS = 4
+NUMBER_OF_SCINTS = 5
 
 # Ground Globals #
 GROUND_COLOR = color.brown
@@ -49,3 +49,6 @@ dx = 0.01  # meter
 
 # Viewer Globals #
 WIRE_COLOR = color.black
+
+# Plot Globals #
+NUMBER_OF_BINS = 50

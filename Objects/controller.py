@@ -1,6 +1,6 @@
 import random as rnd
-import multiprocessing as mp
-from numba import jit, cuda
+# import multiprocessing as mp
+# from numba import jit, cuda
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,7 @@ wireframes = []
 ground_tiles = []
 _rejection_sampling = RejectionSampling()
 passed_muons = []
+
 hits_on_scint_0 = []
 hits_on_scint_1 = []
 hits_on_scint_2 = []
@@ -110,7 +111,7 @@ def create_n_random_muons(n):
         # line_i = None  # Do not draw muons
         # if i % 1 == 0:
         #     line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR) #None  #
+        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)  # None  #
         muon_i = Muon(i, curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
@@ -122,6 +123,12 @@ def create_scintillator(num_of_scints):
     This function will create the main scintillator 
     :return: Returns the scintillator object
     """""
+    hits_on_scint_0 = []
+    hits_on_scint_1 = []
+    hits_on_scint_2 = []
+    hits_on_scint_3 = []
+    hits_on_scint_4 = []
+
     NUMBER_OF_SCINTS = num_of_scints
     scintillator_ref = [x for x in objects if isinstance(Scintillator, x)]
     if len(scintillator_ref) > 0:
@@ -186,8 +193,17 @@ def worker(muon):
 
 
 def check_muons_collisions(muons):
+    global hits_on_scint_0
+    global hits_on_scint_1
+    global hits_on_scint_2
+    global hits_on_scint_3
+    global hits_on_scint_4
     # processes = 4
-    scint0, scint1, scint2, scint3, scint4 = None #  TODO: FINISH IT
+    scint0 = None
+    scint1 = None
+    scint2 = None
+    scint3 = None
+    scint4 = None
     # p = processes(Muon.calculate_collisions())
     # pool = mp.Pool(mp.cpu_count() - 1)
     # pool.map(worker, muons)
@@ -198,21 +214,31 @@ def check_muons_collisions(muons):
     for muon in muons:
         # if muon.index % 100 == 0:
         #     print("Checked collision on " + str(muon.index) + " muons.")
-        scint0, scint1, scint2, scint3, scint4 = muon.calculate_collisions()
-        hits_on_scint_0 += scint0
+        scint0, scint1, scint2, scint3, scint4, passed_muon = muon.calculate_collisions()
+        passed_muons.append(passed_muon)
+        if scint0 is not -1: hits_on_scint_0 += scint0
+        if scint1 is not -1: hits_on_scint_1 += scint1
+        if scint2 is not -1: hits_on_scint_2 += scint2
+        if scint3 is not -1: hits_on_scint_3 += scint3
+        if scint4 is not -1: hits_on_scint_4 += scint4
+    ### PROBLEMSS!!! TODO
+    if passed_muons != None:
+        clean_passed_muons = [muon for muon in passed_muons if muon is not None or muon is not []]
+    else:
+        print("No Muon Passed. Exiting")
+        return 0
     for i in range(NUMBER_OF_SCINTS):
         if i == 0:
-            create_hits_hist(hits_on_scint_0, 25, i)
+            create_hits_hist(hits_on_scint_0, NUMBER_OF_BINS, i)
         if i == 1:
-            create_hits_hist(hits_on_scint_1, 25, i)
+            create_hits_hist(hits_on_scint_1, NUMBER_OF_BINS, i)
         if i == 2:
-            create_hits_hist(hits_on_scint_2, 25, i)
+            create_hits_hist(hits_on_scint_2, NUMBER_OF_BINS, i)
         if i == 3:
-            create_hits_hist(hits_on_scint_3, 25, i)
+            create_hits_hist(hits_on_scint_3, NUMBER_OF_BINS, i)
         if i == 4:
-            create_hits_hist(hits_on_scint_4, 25, i)
-
-    num_muons_passed = len(passed_muons)
+            create_hits_hist(hits_on_scint_4, NUMBER_OF_BINS, i)
+    num_muons_passed = len(clean_passed_muons)
     print("Passed muons: " + str(num_muons_passed) + " = " + str(100 * num_muons_passed / NUMBER_OF_MUONS) + "%")
     return hit_entities
 
@@ -221,7 +247,7 @@ def create_hits_hist(hit_points, bins, index):
     # for hit_point in hit_points:
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
-    plt.hist2d(x, y, bins=bins)
+    plt.hist2d(x, y, bins=bins, range=[[-SCINTILLATOR_SIZE_X/2,SCINTILLATOR_SIZE_X/2],[-SCINTILLATOR_SIZE_Y/2,SCINTILLATOR_SIZE_Y]])
     plt.title("Hits Histogram for Scint Index " + str(index) + ", bins=" + str(bins))
     plt.colorbar()
     plt.show()
