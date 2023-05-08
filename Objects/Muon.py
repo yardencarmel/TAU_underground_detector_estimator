@@ -51,31 +51,39 @@ class Muon(Entity):
                                 distance=size_of_vec(self.start_beam - self.end), debug=False)
         # print("RAYCAST LEN: "+str(self.hit_info.distance))
         entities = self.hit_info.entities
-        x = len(entities)
-        if x < 4:
-            print("Muon " + str(self) + " Did not pass through 5 scintillators, will be disposed.")
-            self.kill_muon()
-            return -1, -1, -1, -1, -1, None
-        if len(set(entities)) < len(entities):
+
+        scint_entities = [entity for entity in entities if isinstance(entity, Scintillator)]
+
+        x = len(scint_entities)
+
+
+
+        if len(set(scint_entities)) < len(scint_entities):
             print("Muon " + str(self) + " Registered a hit the same scintillator twice, will be disposed.")
             self.kill_muon()
             return -1, -1, -1, -1, -1, None
-        if x == 4:
+        if x == NUMBER_OF_SCINTS:
             print("Muon " + str(self) + " Did pass through 5 scintillators, will be kept!.")
             self.color = color.cyan
             self.passed_muons.append(self)
+        else:
+            print("Muon " + str(self) + " Did not pass through 5 scintillators, will be disposed.")
+            self.kill_muon()
+            return -1, -1, -1, -1, -1, None
         for entity in entities:
             if isinstance(entity, Scintillator):
+                entity_hit_info = entity.intersects()
                 if entity.level == 0:
-                    hits_on_scint_0.append(self.hit_info.point.xy)
+                    hits_on_scint_0.append(entity_hit_info.point.xy)
                 if entity.level == 1:
-                    hits_on_scint_1.append(self.hit_info.point.xy)
+                    hits_on_scint_1.append(entity_hit_info.point.xy)
                 if entity.level == 2:
-                    hits_on_scint_2.append(self.hit_info.point.xy)
+                    hits_on_scint_2.append(entity_hit_info.point.xy)
                 if entity.level == 3:
-                    hits_on_scint_3.append(self.hit_info.point.xy)
+                    hits_on_scint_3.append(entity_hit_info.point.xy)
                 if entity.level == 4:
-                    hits_on_scint_4.append(self.hit_info.point.xy)
+                    hits_on_scint_4.append(entity_hit_info.point.xy)
+
         return hits_on_scint_0, hits_on_scint_1, hits_on_scint_2, hits_on_scint_3, hits_on_scint_4, self.passed_muons
     def print_collision(self, entity, position):
         print("*************************")
