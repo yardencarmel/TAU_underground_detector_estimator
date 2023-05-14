@@ -26,8 +26,8 @@ class Muon(Entity):
         self.mesh_ref = mesh
         self.index = index
         self.hit_info = None
-        self.start_beam = lerp(self.start, self.end, .6)
-        self.passed_muons = []
+        self.start_beam = lerp(self.start, self.end, .95)
+
         Entity.__init__(self, model=Mesh(vertices=[start, end], mode='line', thickness=0.1), color=MUON_COLOR)
 
     def kill_muon(self):
@@ -47,9 +47,10 @@ class Muon(Entity):
         hits_on_scint_2 = []
         hits_on_scint_3 = []
         hits_on_scint_4 = []
+
         self.hit_info = raycast(self.start_beam, self.end - self.start_beam,
                                 distance=size_of_vec(self.start_beam - self.end), debug=False)
-        # print("RAYCAST LEN: "+str(self.hit_info.distance))
+
         entities = self.hit_info.entities
 
         scint_entities = [entity for entity in entities if isinstance(entity, Scintillator)]
@@ -59,32 +60,41 @@ class Muon(Entity):
 
 
         if len(set(scint_entities)) < len(scint_entities):
-            print("Muon " + str(self) + " Registered a hit the same scintillator twice, will be disposed.")
+            #print("Muon " + str(self) + " Registered a hit the same scintillator twice, will be disposed.")
             self.kill_muon()
             return -1, -1, -1, -1, -1, None
-        if x == NUMBER_OF_SCINTS:
-            print("Muon " + str(self) + " Did pass through 5 scintillators, will be kept!.")
+        elif x == NUMBER_OF_SCINTS:
+            direction = (self.end - self.start)/size_of_vec(self.end - self.start)
+            # print("Muon " + str(self) + " Did pass through 5 scintillators, will be kept!.")
+            #print(direction*SCINTILLATOR_SPACING)
+            hit_points = [0 for i in range(x)]
+            for i in range(0,x):
+                hit_points[i] = direction * i * SCINTILLATOR_SPACING + self.hit_info.point
+
+
+
+            #if hit_points[0] == self.hit_info.point:
+             #   print("First hit point in sync")
             self.color = color.cyan
-            self.passed_muons.append(self)
+
         else:
-            print("Muon " + str(self) + " Did not pass through 5 scintillators, will be disposed.")
+            #print("Muon " + str(self) + " Did not pass through 5 scintillators, will be disposed.")
             self.kill_muon()
             return -1, -1, -1, -1, -1, None
         for entity in entities:
             if isinstance(entity, Scintillator):
-                entity_hit_info = entity.intersects()
                 if entity.level == 0:
-                    hits_on_scint_0.append(entity_hit_info.point.xy)
+                    hits_on_scint_0.append(hit_points[0].xy)
                 if entity.level == 1:
-                    hits_on_scint_1.append(entity_hit_info.point.xy)
+                    hits_on_scint_1.append(hit_points[1].xy)
                 if entity.level == 2:
-                    hits_on_scint_2.append(entity_hit_info.point.xy)
+                    hits_on_scint_2.append(hit_points[2].xy)
                 if entity.level == 3:
-                    hits_on_scint_3.append(entity_hit_info.point.xy)
+                    hits_on_scint_3.append(hit_points[3].xy)
                 if entity.level == 4:
-                    hits_on_scint_4.append(entity_hit_info.point.xy)
+                    hits_on_scint_4.append(hit_points[4].xy)
 
-        return hits_on_scint_0, hits_on_scint_1, hits_on_scint_2, hits_on_scint_3, hits_on_scint_4, self.passed_muons
+        return hits_on_scint_0, hits_on_scint_1, hits_on_scint_2, hits_on_scint_3, hits_on_scint_4, self
     def print_collision(self, entity, position):
         print("*************************")
         print("Muon " + str(self.index) + " hit " + str(entity) + " at " + str(position))

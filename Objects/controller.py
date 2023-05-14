@@ -66,7 +66,7 @@ def create_n_random_muons(n):
     if len(scintillator_ref) < 1:
         print("Please define a scintillator fist!")
         return
-    scintillator_ref = scintillator_ref[0]  # the world's scintillator reference
+    scintillator_ref = scintillator_ref[-1]  # the world's scintillator reference
 
     # For loop to create n muons
     for i in range(0, n):  # Create n end vectors for Muons
@@ -108,10 +108,10 @@ def create_n_random_muons(n):
         start_points.append(curr_start_point)
 
         # Create a line based on the start point and end point, and create a muon obj based on that.
-        # line_i = None  # Do not draw muons
+        line_i = None  # Do not draw muons
         # if i % 1 == 0:
         #     line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)
-        line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)  # None  #
+        # line_i = invoke_draw_line(curr_start_point, curr_end_point, 0.1, MUON_COLOR)  # None  #
         muon_i = Muon(i, curr_start_point, curr_end_point, 1 * GeV, line_i)
         add_to_objects_list(muon_i)
         muons.append(muon_i)
@@ -130,6 +130,7 @@ def create_scintillator(num_of_scints):
     hits_on_scint_4 = []
 
     NUMBER_OF_SCINTS = num_of_scints
+
     scintillator_ref = [x for x in objects if isinstance(Scintillator, x)]
     if len(scintillator_ref) > 0:
         print("A scintillator is already defined!")
@@ -137,13 +138,14 @@ def create_scintillator(num_of_scints):
     scint_size = Vec3(SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z)  # set in settings
     scint_rot = VEC0_3D  # in degrees
     for i in range(num_of_scints):
-        scint_pos = Vec3(0, 0, -num_of_scints / 2 + 0.5) * 0.1 + Vec3(0, 0, 1) * 0.1 * i  # in meters
-        wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, color=WIRE_COLOR)
+        #scint_pos = Vec3(0, 0, -num_of_scints / 2 + 0.5) * SCINTILLATOR_SPACING + Vec3(0, 0, 1) * SCINTILLATOR_SPACING * i  # in meters
+        scint_pos = VEC0_3D + Vec3(0, 0, 1) * SCINTILLATOR_SPACING * i  # in meters
+        wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, WIRE_COLOR)
         scint = Scintillator(i, scint_pos, scint_size, scint_rot, wireframe)
         wireframe.collider = None
         wireframe.parent = scint
     # scint_origin = VEC0_3D
-    objects.insert(-1, scint)  # TODO: understand if scintillator's size is from middle point or some edge point
+    objects.insert(-1, scint)
     return scint
 
 
@@ -159,12 +161,12 @@ def create_scintillator(num_of_scints):
 
 
 def create_ground(map_size, vacancy_pos, vacancy_size):
-    ground_map = np.ones((int(map_size.x), int(map_size.y), int(map_size.z)), dtype=int)
+    ground_map = np.ones((int(map_size), int(map_size), int(map_size)), dtype=int)
 
-    ground_map[int(vacancy_pos.x):int(vacancy_pos.y + vacancy_size.x),
-    int(vacancy_pos.y):int(vacancy_pos.x + vacancy_size.y),
+    ground_map[int(vacancy_pos.x):int(vacancy_pos.x + vacancy_size.x),
+    int(vacancy_pos.y):int(vacancy_pos.y + vacancy_size.y),
     int(vacancy_pos.z):int(vacancy_pos.z + vacancy_size.z)] = \
-        np.zeros((int(vacancy_size.y), int(vacancy_size.x), int(vacancy_size.z)), dtype=int)
+        np.zeros((int(vacancy_size.x), int(vacancy_size.y), int(vacancy_size.z)), dtype=int)
 
     X, Y, Z = ground_map.shape
     delta_x = -X / 2 + 0.5
@@ -179,11 +181,12 @@ def create_ground(map_size, vacancy_pos, vacancy_size):
 
 # TODO: understand how to create ground tile that inherits from cube
 def creat_ground_tile(pos, size=Vec3(GROUND_SLATE_X, GROUND_SLATE_Y, GROUND_SLATE_Z)):
-    cube = invoke_draw_cube(pos, size, 1, GROUND_COLOR)
-    cube.collider = 'box'
-    wireframe = invoke_draw_cube(pos, size * 1.01, 0, color=WIRE_COLOR)
+    # cube = invoke_draw_cube(pos, size*1.01, GROUND_COLOR)
+    #cube.collider = 'box'
+    wireframe = invoke_draw_cube(pos, size * 1.01, WIRE_COLOR)
     wireframes.append(wireframe)
-    ground = Ground(pos, size, VEC0_3D, cube, wireframe, cube.collider)
+    ground = Ground(pos, size, VEC0_3D, wireframe)
+    ground.collider = 'box'
     ground_tiles.append(ground)
     return ground
 
@@ -212,10 +215,12 @@ def check_muons_collisions(muons):
     hit_entities = []
 
     for muon in muons:
-        # if muon.index % 100 == 0:
-        #     print("Checked collision on " + str(muon.index) + " muons.")
+        if muon.index % 100 == 0:
+            print("Checked collision on " + str(muon.index) + " muons.")
+
         scint0, scint1, scint2, scint3, scint4, passed_muon = muon.calculate_collisions()
-        passed_muons.append(passed_muon)
+        if passed_muon is not None:
+            passed_muons.append(passed_muon)
         if scint0 is not -1: hits_on_scint_0 += scint0
         if scint1 is not -1: hits_on_scint_1 += scint1
         if scint2 is not -1: hits_on_scint_2 += scint2
@@ -247,7 +252,9 @@ def create_hits_hist(hit_points, bins, index):
     # for hit_point in hit_points:
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
-    plt.hist2d(x, y, bins=bins, range=[[-SCINTILLATOR_SIZE_X/2,SCINTILLATOR_SIZE_X/2],[-SCINTILLATOR_SIZE_Y/2,SCINTILLATOR_SIZE_Y]])
+    plt.hist2d(x, y, bins=bins,
+               range=[[-SCINTILLATOR_SIZE_X/2,SCINTILLATOR_SIZE_X/2],[-SCINTILLATOR_SIZE_Y/2,SCINTILLATOR_SIZE_Y]],
+               cmap='viridis', vmin=0, vmax=NUMBER_OF_MUONS*0.002)
     plt.title("Hits Histogram for Scint Index " + str(index) + ", bins=" + str(bins))
     plt.colorbar()
     plt.show()
