@@ -11,6 +11,8 @@ from Objects.Ground import Ground
 from Objects.scintillator import Scintillator
 from Model.rejection_sampling import RejectionSampling
 from Model.settings import *
+import multiprocessing
+
 
 objects = []
 wireframes = []
@@ -38,7 +40,7 @@ def add_to_objects_list(_object):
     return _object
 
 
-def create_n_random_muons(n):
+def create_n_random_muons(n, scintillators):
     """
     This function will create and print n muons of varying energies and angels
     :param n: Number of muons
@@ -62,12 +64,12 @@ def create_n_random_muons(n):
     theta = _rejection_sampling.get_angles(n)
 
     # Check there exists a scintillator in the scene TODO: change when there are several scintillators
-    scintillator_ref = [x for x in objects if isinstance(x, (Scintillator,))]  # Tries to get the scintillator obj
-    if len(scintillator_ref) < 1:
-        print("Please define a scintillator fist!")
-        return
-    scintillator_ref = scintillator_ref[-1]  # the world's scintillator reference
-
+    # scintillator_ref = [x for x in objects if isinstance(x, (Scintillator,))]  # Tries to get the scintillator obj
+    # if len(scintillator_ref) < 1:
+    #     print("Please define a scintillator fist!")
+    #     return
+    # scintillator_ref = scintillator_ref[-1]  # the world's scintillator reference
+    scintillator_ref = scintillators[0]
     # For loop to create n muons
     for i in range(0, n):  # Create n end vectors for Muons
         # Randomize hit (end) point on the scintillator
@@ -135,18 +137,28 @@ def create_scintillator(num_of_scints):
     if len(scintillator_ref) > 0:
         print("A scintillator is already defined!")
         return
+
     scint_size = Vec3(SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z)  # set in settings
-    scint_rot = VEC0_3D  # in degrees
+    scint_rot = VEC0_3D  # in degrees(?)
+
+    scintillators = []
+
     for i in range(num_of_scints):
         #scint_pos = Vec3(0, 0, -num_of_scints / 2 + 0.5) * SCINTILLATOR_SPACING + Vec3(0, 0, 1) * SCINTILLATOR_SPACING * i  # in meters
         scint_pos = VEC0_3D + Vec3(0, 0, 1) * SCINTILLATOR_SPACING * i  # in meters
+
         wireframe = invoke_draw_cube(scint_pos, scint_size * 1.01, WIRE_COLOR)
-        scint = Scintillator(i, scint_pos, scint_size, scint_rot, wireframe)
         wireframe.collider = None
+
+        scint = Scintillator(i, scint_pos, scint_size, scint_rot, wireframe)
+
         wireframe.parent = scint
+        scintillators.append(scint)
+        objects.append(scint)
     # scint_origin = VEC0_3D
-    objects.insert(-1, scint)
-    return scint
+
+
+    return scintillators
 
 
 # def lists_to_vectors(end):
@@ -221,11 +233,11 @@ def check_muons_collisions(muons):
         scint0, scint1, scint2, scint3, scint4, passed_muon = muon.calculate_collisions()
         if passed_muon is not None:
             passed_muons.append(passed_muon)
-        if scint0 is not -1: hits_on_scint_0 += scint0
-        if scint1 is not -1: hits_on_scint_1 += scint1
-        if scint2 is not -1: hits_on_scint_2 += scint2
-        if scint3 is not -1: hits_on_scint_3 += scint3
-        if scint4 is not -1: hits_on_scint_4 += scint4
+        if scint0 != -1: hits_on_scint_0 += scint0
+        if scint1 != -1: hits_on_scint_1 += scint1
+        if scint2 != -1: hits_on_scint_2 += scint2
+        if scint3 != -1: hits_on_scint_3 += scint3
+        if scint4 != -1: hits_on_scint_4 += scint4
     ### PROBLEMSS!!! TODO
     if passed_muons != None:
         clean_passed_muons = [muon for muon in passed_muons if muon is not None or muon is not []]

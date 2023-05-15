@@ -12,7 +12,7 @@ def draw_line(start, end, thickness, line_color):
 
 
 def draw_wireframe_cube(pos, size, color):
-    cube = Entity(model='wireframe_cube', world_position=pos, scale=size, color=color, mode='line')
+    cube = Entity(model='wireframe_cube', world_position=pos, scale=size, color=color, mode='line', collider=None)
     return cube
 
 
