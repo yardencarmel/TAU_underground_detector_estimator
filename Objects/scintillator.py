@@ -15,4 +15,4 @@ class Scintillator(Entity):
         pass
 
     def on_click(self):
-        print("self")
+        print(self.level)

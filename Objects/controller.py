@@ -1,8 +1,9 @@
 import random as rnd
-# import multiprocessing as mp
-# from numba import jit, cuda
+
+import csv
 
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 import View.viewer as viewer
@@ -11,8 +12,9 @@ from Objects.Ground import Ground
 from Objects.scintillator import Scintillator
 from Model.rejection_sampling import RejectionSampling
 from Model.settings import *
-import multiprocessing
 
+from os.path import exists
+import pandas
 
 objects = []
 wireframes = []
@@ -139,7 +141,7 @@ def create_scintillator(num_of_scints):
         return
 
     scint_size = Vec3(SCINTILLATOR_SIZE_X, SCINTILLATOR_SIZE_Y, SCINTILLATOR_SIZE_Z)  # set in settings
-    scint_rot = VEC0_3D  # in degrees(?)
+    scint_rot = VEC0_3D  # in degrees
 
     scintillators = []
 
@@ -265,11 +267,38 @@ def create_hits_hist(hit_points, bins, index):
     x = np.array([hit_point.x for hit_point in hit_points])
     y = np.array([hit_point.y for hit_point in hit_points])
     plt.hist2d(x, y, bins=bins,
-               range=[[-SCINTILLATOR_SIZE_X/2,SCINTILLATOR_SIZE_X/2],[-SCINTILLATOR_SIZE_Y/2,SCINTILLATOR_SIZE_Y]],
+               range=[[-SCINTILLATOR_SIZE_X*2,SCINTILLATOR_SIZE_X*2],[-SCINTILLATOR_SIZE_Y*2,SCINTILLATOR_SIZE_Y*2]],
                cmap='viridis', vmin=0, vmax=NUMBER_OF_MUONS*0.002)
     plt.title("Hits Histogram for Scint Index " + str(index) + ", bins=" + str(bins))
     plt.colorbar()
     plt.show()
+
+
+    # Create the rows for the csv results file
+    rows = []
+    fields = ['x', 'y']
+    for point in hit_points:
+        rows.append(list([point.x, point.y]))
+    filename = "results_scint_" + str(index) + ".csv"
+    # Check if the results file already exists
+    file_exists = exists(filename)
+    # If it doesn't exist, create one
+    if not file_exists:
+        print("Creating results file for scintillator "+str(index))
+        with open(filename, 'w', newline='') as csvfile:
+            # creating a csv writer object
+            csvwriter = csv.writer(csvfile)
+            # writing the fields
+            csvwriter.writerow(fields)
+            # writing the data rows
+            csvwriter.writerows(rows)
+            csvfile.close()
+    # If the file exists, we need to add to it the data in its end
+    else:
+        with open(filename, 'a', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerows(rows)
+            csvfile.close()
 
 
 def create_start_hist(start_points, bins):

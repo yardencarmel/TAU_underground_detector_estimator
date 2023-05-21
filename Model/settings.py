@@ -14,8 +14,8 @@ cm = 10 ** -1
 mm = 10 ** -2
 
 # Scintillator Globals #
-SCINTILLATOR_SIZE_X = 0.5
-SCINTILLATOR_SIZE_Y = 0.5
+SCINTILLATOR_SIZE_X = 0.5 * m
+SCINTILLATOR_SIZE_Y = 0.5 * m
 SCINTILLATOR_SIZE_Z = 0.0254  # 1 inch
 SCINTILLATOR_COLOR = color.pink
 SCINTILLATOR_SPACING = 0.1 * m
@@ -31,7 +31,7 @@ MAP_SIZE = 5 * m**3
 # Muons Globals #
 CREATION_HEIGHT = 1000 * m  # meters above scintillator
 MUON_COLOR = color.green
-NUMBER_OF_MUONS = 10
+NUMBER_OF_MUONS = 1000
 
 # 0 Vec #
 VEC0_2D = Vec2(0, 0)
